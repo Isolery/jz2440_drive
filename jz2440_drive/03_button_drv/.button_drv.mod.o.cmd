@@ -1,7 +1,7 @@
-cmd_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.o := arm-linux-gcc -Wp,-MD,/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/.button_drv.mod.o.d  -nostdinc -isystem /home/book/jz2440/gcc-3.4.5-glibc-2.3.6/bin/../lib/gcc/arm-linux/3.4.5/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -marm -fno-omit-frame-pointer -mapcs -mno-sched-prolog -mapcs-32 -mno-thumb-interwork -D__LINUX_ARM_ARCH__=4 -march=armv4t -mtune=arm9tdmi -malignment-traps -msoft-float -Uarm -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -Wdeclaration-after-statement     -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(button_drv.mod)"  -D"KBUILD_MODNAME=KBUILD_STR(button_drv)" -DMODULE -c -o /mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.o /mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.c
+cmd_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.o := arm-linux-gcc -Wp,-MD,/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/.button_drv.mod.o.d  -nostdinc -isystem /home/book/jz2440/gcc-3.4.5-glibc-2.3.6/bin/../lib/gcc/arm-linux/3.4.5/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -marm -fno-omit-frame-pointer -mapcs -mno-sched-prolog -mapcs-32 -mno-thumb-interwork -D__LINUX_ARM_ARCH__=4 -march=armv4t -mtune=arm9tdmi -malignment-traps -msoft-float -Uarm -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -Wdeclaration-after-statement     -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(button_drv.mod)"  -D"KBUILD_MODNAME=KBUILD_STR(button_drv)" -DMODULE -c -o /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.o /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.c
 
-deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.o := \
-  /mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.c \
+deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.o := \
+  /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.c \
     $(wildcard include/config/module/unload.h) \
   include/linux/module.h \
     $(wildcard include/config/modules.h) \
@@ -221,6 +221,6 @@ deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/b
   include/linux/vermagic.h \
   include/linux/utsrelease.h \
 
-/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.o: $(deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.o)
+/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.o: $(deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.o)
 
-$(deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.mod.o):
+$(deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.o):

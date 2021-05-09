@@ -4,12 +4,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
-/* thirddrvtest 
-  */
 int main(int argc, char **argv)
 {
 	int fd;
-	unsigned char key_vals[4];
+	unsigned char key_val;
 	int cnt = 0;
 	
 	fd = open("/dev/mybuttons", O_RDWR);
@@ -24,11 +22,8 @@ int main(int argc, char **argv)
 
 	while (1)
 	{
-		read(fd, key_vals, sizeof(key_vals));
-		if (!key_vals[0] || !key_vals[1] || !key_vals[2] || !key_vals[3])
-		{
-			printf("%04d key pressed: %d %d %d %d\n", cnt++, key_vals[0], key_vals[1], key_vals[2], key_vals[3]);
-		}
+		read(fd, &key_val, 1);
+		printf("key_val = 0x%x\n", key_val);
 	}
 	
 	return 0;

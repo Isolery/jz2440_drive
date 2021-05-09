@@ -1,109 +1,9 @@
-// #include <linux/module.h>
-// #include <linux/kernel.h>
-// #include <linux/fs.h>
-// #include <linux/init.h>
-// #include <linux/delay.h>
-// #include <asm/uaccess.h>
-// #include <asm/irq.h>
-// #include <asm/io.h>
-// #include <asm/arch/regs-gpio.h>
-// #include <asm/hardware.h>
-
-// static struct class *button_class;
-// static struct class_device *button_class_dev;
-
-// volatile unsigned long *GPFCON = NULL;
-// volatile unsigned long *GPFDAT = NULL;
-// volatile unsigned long *GPFUP = NULL;
-
-// volatile unsigned long *GPGCON = NULL;
-// volatile unsigned long *GPGDAT = NULL;
-// volatile unsigned long *GPGUP = NULL;
-
-// static int button_drv_open(struct inode *inode, struct file *file)
-// {
-//     /* 配置GPF0, GPF2, GPG3为输入引脚 */
-//     printk("button_drv_open\n");
-//     // *GPFCON &= ~((3<<0) | (3<<4));
-//     // *GPGCON &= ~((3<<6)); 
-
-//     // /* 输入上拉 */
-//     // *GPFUP &= ~((1<<0) | (1<<2));
-//     // *GPGUP &= ~(1<<3);
-// }
-
-// ssize_t button_drv_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
-// {
-//     /* 返回4个引脚的电平 */
-// 	unsigned char key_vals[4];
-// 	int regval;
-
-// 	if (size != sizeof(key_vals))
-// 		return -EINVAL;
-
-// 	/* 读GPF0,2 */
-// 	regval = *GPFDAT;
-// 	key_vals[0] = (regval & (1<<0)) ? 1 : 0;
-// 	key_vals[1] = (regval & (1<<2)) ? 1 : 0;
-	
-
-// 	/* 读GPG3,11 */
-// 	regval = *GPGDAT;
-// 	key_vals[2] = (regval & (1<<3)) ? 1 : 0;
-// 	key_vals[3] = (regval & (1<<11)) ? 1 : 0;
-
-// 	copy_to_user(buf, key_vals, sizeof(key_vals));
-	
-// 	return sizeof(key_vals);
-// }
-
-// static struct file_operations button_drv_fops = {
-//     .owner = THIS_MODULE,
-//     .open  = button_drv_open,
-//     .read  = button_drv_read,
-// };
-
-// int major;
-// int button_drv_init(void)
-// {
-//     major = register_chrdev(0, "button_drv", &button_drv_fops);
-
-//     button_class = class_create(THIS_MODULE, "buttondrv");
-
-//     button_class_dev = class_device_create(button_class, NULL, MKDEV(major, 0), NULL, "mybuttons");
-
-//     // GPFCON = (volatile unsigned long *)ioremap(0x56000050, 20);
-//     // GPFDAT = GPFCON + 1;
-//     // GPFUP  = GPFCON + 2;
-
-//     // GPGCON = (volatile unsigned long *)ioremap(0x56000060, 20);
-//     // GPGDAT = GPFCON + 1;
-//     // GPGUP  = GPFCON + 2;
-
-//     return 0;
-// }
-
-// static void button_drv_exit(void)
-// {
-//     // unregister_chrdev(major, "button_drv");
-
-//     // class_device_unregister(button_class_dev);
-//     // class_destroy(button_class);
-
-//     // iounmap(GPFCON);
-//     // iounmap(GPGCON);
-// }
-
-// module_init(button_drv_init);
-// module_exit(button_drv_exit);
-
-// MODULE_LICENSE("GPL");
-
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/delay.h>
+#include <linux/irq.h>
 #include <asm/uaccess.h>
 #include <asm/irq.h>
 #include <asm/io.h>
@@ -113,58 +13,92 @@
 static struct class *mybuttons_class;
 static struct class_device *mybuttons_class_devs;
 
-volatile unsigned long *GPFCON = NULL;
-volatile unsigned long *GPFDAT = NULL;
-volatile unsigned long *GPFUP = NULL;
+static DECLARE_WAIT_QUEUE_HEAD(button_waitq);
+/* 中断事件标志, 中断服务程序将它置1，button_drv_read将它清0 */
+static volatile int ev_press = 0;
 
-volatile unsigned long *GPGCON = NULL;
-volatile unsigned long *GPGDAT = NULL;
-volatile unsigned long *GPGUP = NULL;
+struct pin_desc{
+    unsigned int pin;
+    unsigned int key_val;
+};
+
+/* 键值: 按下时, 0x01, 0x02, 0x03, 0x04 */
+/* 键值: 松开时, 0x81, 0x82, 0x83, 0x84 */
+static unsigned char key_val;
+
+struct pin_desc pins_desc[4] = {
+    {S3C2410_GPF0,  0x01}, 
+    {S3C2410_GPF2,  0x02}, 
+    {S3C2410_GPG3,  0x03}, 
+    {S3C2410_GPG11, 0x04}, 
+};
+
+static irqreturn_t buttons_irq(int irq, void *dev_id)
+{
+    struct pin_desc *pindesc = (struct pin_desc *)dev_id;
+    unsigned int pinval;
+
+    pinval = s3c2410_gpio_getpin(pindesc->pin);
+
+    if(pinval)
+    {
+        // 松开
+        key_val = 0x80 | pindesc->key_val;
+    }
+    else
+    {
+        // 按下
+        key_val = pindesc->key_val;
+    }
+
+    ev_press = 1;                           /* 表示中断发生了 */
+    wake_up_interruptible(&button_waitq);   /* 唤醒休眠的进程 */
+
+    return IRQ_RETVAL(IRQ_HANDLED);
+}
 
 static int button_drv_open(struct inode *inode, struct file *file)
 {
     printk("button_drv_open\n");
 
-    /* 配置GPF0, GPF2, GPG3为输入引脚 */
-    *GPFCON &= ~((3<<0) | (3<<4));
-    *GPGCON &= ~((3<<6)); 
-
-    /* 输入上拉 */
-    *GPFUP &= ~((1<<0) | (1<<2));
-    *GPGUP &= ~(1<<3);
+    request_irq(IRQ_EINT0,  buttons_irq, IRQT_BOTHEDGE, "S2", &pins_desc[0]);
+    request_irq(IRQ_EINT2,  buttons_irq, IRQT_BOTHEDGE, "S3", &pins_desc[1]);
+    request_irq(IRQ_EINT11, buttons_irq, IRQT_BOTHEDGE, "S4", &pins_desc[2]);
+    request_irq(IRQ_EINT19, buttons_irq, IRQT_BOTHEDGE, "S5", &pins_desc[3]);
 
     return 0;
 }
 
 ssize_t button_drv_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
 {
-    /* 返回4个引脚的电平 */
-	unsigned char key_vals[4];
-	int regval;
+    if (size != 1)
+        return -EINVAL;
 
-	if (size != sizeof(key_vals))
-		return -EINVAL;
+    /* 如果没有按键动作, 休眠 */
+	wait_event_interruptible(button_waitq, ev_press);
 
-	/* 读GPF0,2 */
-	regval = *GPFDAT;
-	key_vals[0] = (regval & (1<<0)) ? 1 : 0;
-	key_vals[1] = (regval & (1<<2)) ? 1 : 0;
-	
+    /* 如果有按键动作, 返回键值 */
+	copy_to_user(buf, &key_val, 1);
+	ev_press = 0;
 
-	/* 读GPG3,11 */
-	regval = *GPGDAT;
-	key_vals[2] = (regval & (1<<3)) ? 1 : 0;
-	key_vals[3] = (regval & (1<<11)) ? 1 : 0;
+	return 1;
+}
 
-	copy_to_user(buf, key_vals, sizeof(key_vals));
-	
-	return sizeof(key_vals);
+int button_drv_release(struct inode *inode, struct file *file)
+{
+    free_irq(IRQ_EINT0,  &pins_desc[0]);
+    free_irq(IRQ_EINT2,  &pins_desc[0]);
+    free_irq(IRQ_EINT11, &pins_desc[0]);
+    free_irq(IRQ_EINT19, &pins_desc[0]);
+
+    return 0;
 }
 
 static struct file_operations button_drv_fops = {
-    .owner = THIS_MODULE,
-    .open  = button_drv_open,
-    .read = button_drv_read,
+    .owner   =  THIS_MODULE,
+    .open    =  button_drv_open,
+    .read    =  button_drv_read,
+    .release =  button_drv_release,
 };
 
 int major;
@@ -179,16 +113,7 @@ int button_drv_init(void)
     mybuttons_class = class_create(THIS_MODULE, "mybuttons");
 
     mybuttons_class_devs = class_device_create(mybuttons_class, NULL, MKDEV(major, 0), NULL, "mybuttons");
-
-    GPFCON = (volatile unsigned long *)ioremap(0x56000050, 100);
-    GPFDAT = GPFCON + 1;
-    GPFUP  = GPFCON + 2;
-
-    //GPGCON = (volatile unsigned long *)ioremap(0x56000060, 20);
-    GPGCON = GPFDAT + 4;
-    GPGDAT = GPFCON + 5;
-    GPGUP  = GPFCON + 6;
-
+    
     return 0;
 }
 
@@ -199,8 +124,6 @@ static void button_drv_exit(void)
     unregister_chrdev(major, "button_drv");    // 卸载
     class_device_unregister(mybuttons_class_devs);
     class_destroy(mybuttons_class);
-    iounmap(GPFCON);
-    iounmap(GPGCON);
 }
 
 module_init(button_drv_init);

@@ -1,7 +1,7 @@
-cmd_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.o := arm-linux-gcc -Wp,-MD,/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/.button_drv.o.d  -nostdinc -isystem /home/book/jz2440/gcc-3.4.5-glibc-2.3.6/bin/../lib/gcc/arm-linux/3.4.5/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -marm -fno-omit-frame-pointer -mapcs -mno-sched-prolog -mapcs-32 -mno-thumb-interwork -D__LINUX_ARM_ARCH__=4 -march=armv4t -mtune=arm9tdmi -malignment-traps -msoft-float -Uarm -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -Wdeclaration-after-statement    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(button_drv)"  -D"KBUILD_MODNAME=KBUILD_STR(button_drv)" -c -o /mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.o /mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.c
+cmd_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o := arm-linux-gcc -Wp,-MD,/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/.button_drv.o.d  -nostdinc -isystem /home/book/jz2440/gcc-3.4.5-glibc-2.3.6/bin/../lib/gcc/arm-linux/3.4.5/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -mlittle-endian -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os -marm -fno-omit-frame-pointer -mapcs -mno-sched-prolog -mapcs-32 -mno-thumb-interwork -D__LINUX_ARM_ARCH__=4 -march=armv4t -mtune=arm9tdmi -malignment-traps -msoft-float -Uarm -fno-omit-frame-pointer -fno-optimize-sibling-calls -g  -Wdeclaration-after-statement    -DMODULE -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(button_drv)"  -D"KBUILD_MODNAME=KBUILD_STR(button_drv)" -c -o /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.c
 
-deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.o := \
-  /mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.c \
+deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o := \
+  /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.c \
   include/linux/module.h \
     $(wildcard include/config/modules.h) \
     $(wildcard include/config/modversions.h) \
@@ -258,6 +258,21 @@ deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/b
   include/asm/delay.h \
   include/asm/param.h \
     $(wildcard include/config/hz.h) \
+  include/linux/irq.h \
+    $(wildcard include/config/s390.h) \
+    $(wildcard include/config/irq/per/cpu.h) \
+    $(wildcard include/config/irq/release/method.h) \
+    $(wildcard include/config/generic/pending/irq.h) \
+    $(wildcard include/config/irqbalance.h) \
+    $(wildcard include/config/proc/fs.h) \
+    $(wildcard include/config/auto/irq/affinity.h) \
+    $(wildcard include/config/generic/hardirqs/no//do/irq.h) \
+  include/linux/irqreturn.h \
+  include/asm/irq_regs.h \
+  include/asm-generic/irq_regs.h \
+  include/asm/hw_irq.h \
+    $(wildcard include/config/no/idle/hz.h) \
+  include/asm/mach/irq.h \
   include/asm/uaccess.h \
   include/linux/sched.h \
     $(wildcard include/config/no/hz.h) \
@@ -340,6 +355,6 @@ deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/b
     $(wildcard include/config/cpu/s3c2412/only.h) \
   include/asm/arch/regs-gpio.h \
 
-/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.o: $(deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.o)
+/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o: $(deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o)
 
-$(deps_/mnt/hgfs/Winshare/jz2440/drive/linux-2.6.22.6/jz2440_drive/03_button_drv/button_drv.o):
+$(deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o):
