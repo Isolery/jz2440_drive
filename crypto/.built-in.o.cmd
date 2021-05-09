@@ -1,0 +1,1 @@
+cmd_crypto/built-in.o :=  arm-linux-ld -EL   -r -o crypto/built-in.o crypto/api.o crypto/scatterwalk.o crypto/cipher.o crypto/digest.o crypto/compress.o crypto/crypto_algapi.o crypto/blkcipher.o crypto/cryptomgr.o crypto/md5.o crypto/cbc.o crypto/des.o

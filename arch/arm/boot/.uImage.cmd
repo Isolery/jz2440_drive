@@ -1,0 +1,1 @@
+cmd_arch/arm/boot/uImage := /bin/bash /home/book/jz2440/linux/linux-2.6/linux-2.6.22.6/scripts/mkuboot.sh -A arm -O linux -T kernel -C none -a 0x30008000 -e 0x30008000 -n 'Linux-2.6.22.6' -d arch/arm/boot/zImage arch/arm/boot/uImage

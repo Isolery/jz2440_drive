@@ -1,0 +1,1 @@
+cmd_arch/arm/mach-s3c2412/built-in.o :=  arm-linux-ld -EL   -r -o arch/arm/mach-s3c2412/built-in.o arch/arm/mach-s3c2412/s3c2412.o arch/arm/mach-s3c2412/irq.o arch/arm/mach-s3c2412/clock.o arch/arm/mach-s3c2412/dma.o arch/arm/mach-s3c2412/pm.o arch/arm/mach-s3c2412/mach-smdk2413.o arch/arm/mach-s3c2412/mach-vstms.o
