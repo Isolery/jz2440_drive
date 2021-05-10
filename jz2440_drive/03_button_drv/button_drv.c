@@ -16,6 +16,8 @@ static struct class_device *mybuttons_class_devs;
 
 static DECLARE_WAIT_QUEUE_HEAD(button_waitq);
 
+static DECLARE_MUTEX(button_lock);    // 定义互斥量(该宏已对信号量进行初始化)
+
 /* 中断事件标志, 中断服务程序将它置1，button_drv_read将它清0 */
 static volatile int ev_press = 0;
 
@@ -67,6 +69,8 @@ static int button_drv_open(struct inode *inode, struct file *file)
 {
     printk("button_drv_open\n");
 
+    down(&button_lock);   // 获取信号量
+
     request_irq(IRQ_EINT0,  buttons_irq, IRQT_BOTHEDGE, "S2", &pins_desc[0]);
     request_irq(IRQ_EINT2,  buttons_irq, IRQT_BOTHEDGE, "S3", &pins_desc[1]);
     request_irq(IRQ_EINT11, buttons_irq, IRQT_BOTHEDGE, "S4", &pins_desc[2]);
@@ -96,6 +100,8 @@ int button_drv_release(struct inode *inode, struct file *file)
     free_irq(IRQ_EINT2,  &pins_desc[0]);
     free_irq(IRQ_EINT11, &pins_desc[0]);
     free_irq(IRQ_EINT19, &pins_desc[0]);
+
+    up(&button_lock);
 
     return 0;
 }
