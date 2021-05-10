@@ -15,8 +15,11 @@ static struct class *mybuttons_class;
 static struct class_device *mybuttons_class_devs;
 
 static DECLARE_WAIT_QUEUE_HEAD(button_waitq);
+
 /* 中断事件标志, 中断服务程序将它置1，button_drv_read将它清0 */
 static volatile int ev_press = 0;
+
+static struct fasync_struct *buttons_async;
 
 struct pin_desc{
     unsigned int pin;
@@ -54,6 +57,8 @@ static irqreturn_t buttons_irq(int irq, void *dev_id)
 
     ev_press = 1;                           /* 表示中断发生了 */
     wake_up_interruptible(&button_waitq);   /* 唤醒休眠的进程 */
+
+    kill_fasync(&buttons_async, SIGIO, POLL_IN);
 
     return IRQ_RETVAL(IRQ_HANDLED);
 }
@@ -107,12 +112,19 @@ static unsigned button_drv_poll(struct file *file, poll_table *wait)
     return mask;
 }
 
+static int button_drv_fasync(int fd, struct file *filp, int on)
+{
+    printk("driver: buttons_drv_fasync\n");
+    return fasync_helper(fd, filp, on, &buttons_async);
+}
+
 static struct file_operations button_drv_fops = {
     .owner   =  THIS_MODULE,
     .open    =  button_drv_open,
     .read    =  button_drv_read,
     .release =  button_drv_release,
     .poll    =  button_drv_poll,
+    .fasync  =  button_drv_fasync,
 };
 
 int major;

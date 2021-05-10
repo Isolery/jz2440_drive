@@ -2,39 +2,41 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <signal.h>
 #include <unistd.h>
-#include <poll.h>
+#include <fcntl.h>
+
+int fd;
+
+void my_signal_fun(int signum)
+{
+	unsigned char key_val;
+	read(fd, &key_val, 1);
+	printf("key_val: 0x%x\n", key_val);
+}
 
 int main(int argc, char **argv)
 {
-	int fd;
-	unsigned char key_val;
 	int ret;
+	int oflags;
 
-	struct pollfd fds[1];
-	
+	signal(SIGIO, my_signal_fun);
+
 	fd = open("/dev/mybuttons", O_RDWR);
-	if (fd < 0)
+	if(fd < 0)
 		printf("can't open!\n");
 	else
 		printf("open ok!\n");
 
-	fds[0].fd = fd;
-	fds[0].events = POLLIN;	
+	fcntl(fd, F_SETOWN, getpid());    // 将应用程序的PID告诉驱动程序
 
-	while (1)
+	oflags = fcntl(fd, F_GETFL);
+
+	fcntl(fd, F_SETFL, oflags | FASYNC);   // 改变fasync标记, 最终会调用驱动的fasync -> fasync_helper -> 初始化buttons_async结构体
+
+	while(1)
 	{
-		ret = poll(fds, 1, 5000);
-
-		if(ret == 0)
-		{
-			printf("time out\n");
-		}
-		else
-		{
-			read(fd, &key_val, 1);
-			printf("key_val = 0x%x\n", key_val);
-		}
+		sleep(1000);
 	}
 	
 	return 0;
