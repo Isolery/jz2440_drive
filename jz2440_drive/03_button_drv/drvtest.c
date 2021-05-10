@@ -6,37 +6,25 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-int fd;
-
-void my_signal_fun(int signum)
-{
-	unsigned char key_val;
-	read(fd, &key_val, 1);
-	printf("key_val: 0x%x\n", key_val);
-}
-
 int main(int argc, char **argv)
 {
+	int fd;
+	unsigned char key_val;
 	int ret;
-	int oflags;
 
-	signal(SIGIO, my_signal_fun);
+	fd = open("/dev/mybuttons", O_RDWR);                 // 阻塞方式打开
+	//fd = open("/dev/mybuttons", O_RDWR | O_NONBLOCK);    // 非阻塞方式打开
 
-	fd = open("/dev/mybuttons", O_RDWR);
 	if(fd < 0)
 		printf("can't open!\n");
 	else
 		printf("open ok!\n");
 
-	fcntl(fd, F_SETOWN, getpid());    // 将应用程序的PID告诉驱动程序
-
-	oflags = fcntl(fd, F_GETFL);
-
-	fcntl(fd, F_SETFL, oflags | FASYNC);   // 改变fasync标记, 最终会调用驱动的fasync -> fasync_helper -> 初始化buttons_async结构体
-
 	while(1)
 	{
-		sleep(1000);
+		ret = read(fd, &key_val, 1);
+		printf("key_val : 0x%x ret = %d\n", key_val, ret);
+		//sleep(5);
 	}
 	
 	return 0;

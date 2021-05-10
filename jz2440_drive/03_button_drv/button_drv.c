@@ -21,6 +21,8 @@ static DECLARE_MUTEX(button_lock);    // 定义互斥量(该宏已对信号量�
 /* 中断事件标志, 中断服务程序将它置1，button_drv_read将它清0 */
 static volatile int ev_press = 0;
 
+static struct timer_list button_timer;
+
 static struct fasync_struct *buttons_async;
 
 struct pin_desc{
@@ -39,28 +41,12 @@ struct pin_desc pins_desc[4] = {
     {S3C2410_GPG11, 0x04}, 
 };
 
+static struct pin_desc *irq_pd;
+
 static irqreturn_t buttons_irq(int irq, void *dev_id)
 {
-    struct pin_desc *pindesc = (struct pin_desc *)dev_id;
-    unsigned int pinval;
-
-    pinval = s3c2410_gpio_getpin(pindesc->pin);
-
-    if(pinval)
-    {
-        // 松开
-        key_val = 0x80 | pindesc->key_val;
-    }
-    else
-    {
-        // 按下
-        key_val = pindesc->key_val;
-    }
-
-    ev_press = 1;                           /* 表示中断发生了 */
-    wake_up_interruptible(&button_waitq);   /* 唤醒休眠的进程 */
-
-    kill_fasync(&buttons_async, SIGIO, POLL_IN);
+    irq_pd = (struct pin_desc *)dev_id;
+    mod_timer(&button_timer, jiffies+HZ/100);
 
     return IRQ_RETVAL(IRQ_HANDLED);
 }
@@ -69,8 +55,16 @@ static int button_drv_open(struct inode *inode, struct file *file)
 {
     printk("button_drv_open\n");
 
-    down(&button_lock);   // 获取信号量
-
+    if(file->f_flags & O_NONBLOCK)
+    {   
+        if(down_trylock(&button_lock))
+            return -EBUSY;    // 若无法获取信号量, 则立马返回（非阻塞操作）
+    }
+    else
+    {
+        down(&button_lock);   // 获取信号量
+    }
+    
     request_irq(IRQ_EINT0,  buttons_irq, IRQT_BOTHEDGE, "S2", &pins_desc[0]);
     request_irq(IRQ_EINT2,  buttons_irq, IRQT_BOTHEDGE, "S3", &pins_desc[1]);
     request_irq(IRQ_EINT11, buttons_irq, IRQT_BOTHEDGE, "S4", &pins_desc[2]);
@@ -84,8 +78,16 @@ ssize_t button_drv_read(struct file *file, char __user *buf, size_t size, loff_t
     if (size != 1)
         return -EINVAL;
 
-    /* 如果没有按键动作, 休眠 */
-	wait_event_interruptible(button_waitq, ev_press);
+    if(file->f_flags & O_NONBLOCK)
+    {   
+        if(!ev_press)
+            return -EBUSY;    // 若无按键按下, 则立马返回（非阻塞操作）
+    }    
+    else
+    {
+        /* 如果没有按键动作, 休眠 */
+	    wait_event_interruptible(button_waitq, ev_press);
+    }
 
     /* 如果有按键动作, 返回键值 */
 	copy_to_user(buf, &key_val, 1);
@@ -133,10 +135,41 @@ static struct file_operations button_drv_fops = {
     .fasync  =  button_drv_fasync,
 };
 
+static void button_timer_function(unsigned long data)
+{
+    struct pin_desc *pindesc = irq_pd;
+    unsigned int pinval;
+
+    if(!pindesc)
+        return;
+
+    pinval = s3c2410_gpio_getpin(pindesc->pin);
+
+    if(pinval)
+    {
+        // 松开
+        key_val = 0x80 | pindesc->key_val;
+    }
+    else
+    {
+        // 按下
+        key_val = pindesc->key_val;
+    }
+
+    ev_press = 1;                           /* 表示中断发生了 */
+    wake_up_interruptible(&button_waitq);   /* 唤醒休眠的进程 */
+
+    kill_fasync(&buttons_async, SIGIO, POLL_IN);
+}
+
 int major;
 int button_drv_init(void)
 {
     int minor = 0;
+
+    init_timer(&button_timer);
+    button_timer.function = button_timer_function;
+    add_timer(&button_timer);
 
     // 主设备号设为0表示自动分配主设备号
     major = register_chrdev(0, "button_drv", &button_drv_fops);    // 注册内核
