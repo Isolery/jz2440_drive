@@ -354,6 +354,9 @@ deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o := 
     $(wildcard include/config/cpu/s3c2413.h) \
     $(wildcard include/config/cpu/s3c2412/only.h) \
   include/asm/arch/regs-gpio.h \
+  include/linux/poll.h \
+  include/asm/poll.h \
+  include/asm-generic/poll.h \
 
 /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o: $(deps_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o)
 

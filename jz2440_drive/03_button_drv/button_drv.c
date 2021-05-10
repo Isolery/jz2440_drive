@@ -9,6 +9,7 @@
 #include <asm/io.h>
 #include <asm/arch/regs-gpio.h>
 #include <asm/hardware.h>
+#include <linux/poll.h>
 
 static struct class *mybuttons_class;
 static struct class_device *mybuttons_class_devs;
@@ -94,11 +95,24 @@ int button_drv_release(struct inode *inode, struct file *file)
     return 0;
 }
 
+static unsigned button_drv_poll(struct file *file, poll_table *wait)
+{
+    unsigned int mask = 0;
+
+    poll_wait(file, &button_waitq, wait);
+
+    if(ev_press)
+        mask |= POLLIN | POLLRDNORM;
+
+    return mask;
+}
+
 static struct file_operations button_drv_fops = {
     .owner   =  THIS_MODULE,
     .open    =  button_drv_open,
     .read    =  button_drv_read,
     .release =  button_drv_release,
+    .poll    =  button_drv_poll,
 };
 
 int major;

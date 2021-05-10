@@ -3,27 +3,38 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <poll.h>
 
 int main(int argc, char **argv)
 {
 	int fd;
 	unsigned char key_val;
-	int cnt = 0;
+	int ret;
+
+	struct pollfd fds[1];
 	
 	fd = open("/dev/mybuttons", O_RDWR);
 	if (fd < 0)
-	{
 		printf("can't open!\n");
-	}
 	else
-	{
 		printf("open ok!\n");
-	}
+
+	fds[0].fd = fd;
+	fds[0].events = POLLIN;	
 
 	while (1)
 	{
-		read(fd, &key_val, 1);
-		printf("key_val = 0x%x\n", key_val);
+		ret = poll(fds, 1, 5000);
+
+		if(ret == 0)
+		{
+			printf("time out\n");
+		}
+		else
+		{
+			read(fd, &key_val, 1);
+			printf("key_val = 0x%x\n", key_val);
+		}
 	}
 	
 	return 0;
