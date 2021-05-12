@@ -4,7 +4,7 @@ all:
 	make -C $(KERN_DIR) M=`pwd` modules
 
 clean:
-	rm -f *.o *.ko *.mod.o *.mod.c *.symvers modul* .led*
+	rm -f *.o *.ko *.mod.o *.mod.c *.symvers modul* .buttons*
 	rm -rf .tmp_versions
 
-obj-m += led_drv.o
+obj-m += buttons.o

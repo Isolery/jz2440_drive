@@ -8,3 +8,4 @@ clean:
 	rm -rf .tmp_versions
 
 obj-m += led_drv.o
+obj-m += led_dev.o

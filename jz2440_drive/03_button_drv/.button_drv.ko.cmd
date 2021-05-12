@@ -1,1 +1,0 @@
-cmd_/mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.ko := arm-linux-ld -EL  -r -o /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.ko /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.o /mnt/hgfs/Winshare/jz2440/drive/jz2440_drive/03_button_drv/button_drv.mod.o
